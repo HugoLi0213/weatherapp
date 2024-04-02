@@ -15,7 +15,7 @@ To run this application locally, follow these steps:
 
 1. Clone this repository to your local machine.
 2. Navigate to the project directory.
-3. Install dependencies using `npm install` or `yarn install`.
+3. Install dependencies using `npm install`.
 4. Run the app on your device or emulator using 'npx expo start` 
 
 ## Usage
