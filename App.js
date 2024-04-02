@@ -59,29 +59,41 @@ export default function App() {
   };
 
   // Render each LineChart for Temperature, Humidity, and Rain
-  const renderLineChart = (title, dataset, color) => (
-    <View>
-      <Text>{title}</Text>
-      <LineChart
-        data={{
-          labels: allLabels,
-          datasets: [{ data: dataset, color: () => color, strokeWidth: 2 }]
-        }}
-        width={Dimensions.get('window').width - 16}
-        height={220}
-        yAxisLabel=''
-        yAxisSuffix=''
-        yAxisInterval={1}
-        chartConfig={chartConfig}
-        formatXLabel={formatXAxis}
-        bezier
-        style={{
-          marginVertical: 8,
-          borderRadius: 17
-        }}
-      />
-    </View>
-  );
+  const renderLineChart = (title, dataset, color) => {
+    // Check if the dataset is empty and return a message if it is
+    if (dataset.length === 0) {
+      return (
+        <View style={styles.chartContainer}>
+          <Text>No chart data to display!</Text>
+        </View>
+      );
+    }
+
+    // Render the LineChart if the dataset is not empty
+    return (
+      <View style={styles.chartContainer}>
+        <Text>{title}</Text>
+        <LineChart
+          data={{
+            labels: allLabels,
+            datasets: [{ data: dataset, color: () => color, strokeWidth: 2 }]
+          }}
+          width={Dimensions.get('window').width - 16}
+          height={220}
+          yAxisLabel=''
+          yAxisSuffix=''
+          yAxisInterval={1}
+          chartConfig={chartConfig}
+          formatXLabel={formatXAxis}
+          bezier
+          style={{
+            marginVertical: 8,
+            borderRadius: 17
+          }}
+        />
+      </View>
+    );
+  };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
@@ -114,5 +126,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     margin: 5,
     marginLeft: 10, // Additional left padding for the subheader
+  },
+  chartContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 8,
+    borderRadius: 17,
+    padding: 16,
+    backgroundColor: '#f5f5f5', // Optional: if you want to style the container of the 'no data' message
   },
 });
