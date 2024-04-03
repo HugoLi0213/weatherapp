@@ -1,7 +1,7 @@
 import { Picker } from '@react-native-picker/picker';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
-import { Dimensions, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 
 // Location data for Tokyo, Hong Kong, and New York
@@ -99,6 +99,10 @@ export default function App() {
       {renderLineChart('Temperature (°C)', temperatureData, 'rgba(255, 0, 0, 1)')}
       {renderLineChart('Relative Humidity (%)', humidityData, 'rgba(0, 0, 255, 1)')}
       {renderLineChart('Rain (mm)', rainData, 'rgba(0, 255, 0, 1)')}
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>© 2024 Hugo</Text>
+        <Text style={[styles.footerText, styles.link]} onPress={() => Linking.openURL('https://github.com/HugoLi0213')}>GitHub</Text>
+      </View>
     </ScrollView>
   );
 }
@@ -129,5 +133,18 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
     backgroundColor: '#f5f5f5', // Optional: if you want to style the container of the chart
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 20,
+  },
+  footerText: {
+    fontSize: 16,
+    marginRight: 10,
+  },
+  link: {
+    color: 'blue',
+    textDecorationLine: 'underline',
   },
 });
