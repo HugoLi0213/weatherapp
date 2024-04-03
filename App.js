@@ -53,7 +53,7 @@ export default function App() {
         <Text>{title}</Text>
         <LineChart
           data={{
-            labels: Array.from({ length: dataset.length }, (_, i) => `${i}:00`),
+            labels: ['0:00', '6:00', '12:00', '18:00', '24:00'], // Set custom labels
             datasets: [{ data: dataset, color: () => color }],
           }}
           width={Dimensions.get('window').width - 16} // from react-native
@@ -148,3 +148,4 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
 });
+
