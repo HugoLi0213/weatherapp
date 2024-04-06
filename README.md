@@ -16,7 +16,9 @@ To run this application locally, follow these steps:
 1. Clone this repository to your local machine.
 2. Navigate to the project directory.
 3. Install dependencies using `npm install' ,'npm install @react-native-picker/picker','expo install expo-location','npm install -g expo-cli'
-4. Run the app on your device or emulator using 'npx expo start` 
+4. Run the app on your device or emulator using 'npx expo start`
+   ![image](https://github.com/HugoLi0213/weatherapp/assets/66012674/650fde9d-8e44-4a94-9000-b9a3a58601f6)
+
 
 ## Usage
 
