@@ -1,7 +1,7 @@
 import { Picker } from '@react-native-picker/picker';
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useState } from 'react';
-import { Dimensions, Linking, ScrollView, StyleSheet, Text, View, Image} from 'react-native';
+import React, {useEffect, useRef, useState} from 'react';
+import { Dimensions, Linking, ScrollView, StyleSheet, Text, View, Image, Animated} from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 
 // Location data for Tokyo, Hong Kong, and New York
@@ -48,6 +48,27 @@ export default function App() {
         fetchData();
     }, [selectedCity]);
 
+    // animation
+    const fade = useRef(new Animated.Value(1)).current;
+
+    const fadeOut = () => {
+        Animated.timing(fade, {
+            toValue: 0,
+            duration: 0
+        }).start();
+    }
+    const fadeIn = () => {
+        Animated.timing(fade,{
+            toValue: 1,
+            duration: 1000
+        }).start();
+    }
+
+    const animation = async () => {
+        await fadeOut();
+        await fadeIn();
+    }
+
     // Render each LineChart for Temperature, Humidity, and Rain
     const renderLineChart = (title, dataset, color, titleImage) => {
         if (dataset.length === 0) {
@@ -55,7 +76,7 @@ export default function App() {
         }
 
         return (
-            <View style={styles.chartContainer}>
+            <Animated.View style={[styles.chartContainer, {opacity:fade}]}>
                 <View style={{flexDirection: 'row'}}>
                     <Image source={titleImage} style={styles.titleImage}/>
                     <Text>{title}</Text>
@@ -89,7 +110,7 @@ export default function App() {
                         borderRadius: 16
                     }}
                 />
-            </View>
+            </Animated.View>
         );
     };
 
@@ -100,7 +121,7 @@ export default function App() {
             <Picker
                 selectedValue={selectedCity}
                 style={{ height: 50, width: 150, alignSelf: 'center' }}
-                onValueChange={(itemValue, itemIndex) => setSelectedCity(itemValue)}>
+                onValueChange={(itemValue, itemIndex) => {setSelectedCity(itemValue);animation()}}>
                 <Picker.Item label="Tokyo" value="Tokyo" />
                 <Picker.Item label="Hong Kong" value="HongKong" />
                 <Picker.Item label="New York" value="NewYork" />
