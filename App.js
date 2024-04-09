@@ -1,7 +1,8 @@
 import { Picker } from '@react-native-picker/picker';
+import * as Location from 'expo-location';
 import { StatusBar } from 'expo-status-bar';
-import React, {useEffect, useRef, useState} from 'react';
-import { Dimensions, Linking, ScrollView, StyleSheet, Text, View, Image, Animated} from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, Button, Dimensions, Image, Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 
 // Location data for Tokyo, Hong Kong, and New York
@@ -15,17 +16,19 @@ const titleImage = {
     temperature: require('./images/temperature.png'),
     humidity: require('./images/humidity.png'),
     rain: require('./images/rain.jpg'),
-}
+};
 
 export default function App() {
     const [selectedCity, setSelectedCity] = useState('Tokyo');
     const [temperatureData, setTemperatureData] = useState([]);
     const [humidityData, setHumidityData] = useState([]);
     const [rainData, setRainData] = useState([]);
+    const fade = useRef(new Animated.Value(1)).current;
 
-    // Function to fetch data from the API for a given location
-    const fetchData = async () => {
-        const { latitude, longitude } = locations[selectedCity];
+    const fetchData = async (latitude = null, longitude = null) => {
+        if (!latitude || !longitude) {
+            ({ latitude, longitude } = locations[selectedCity]);
+        }
         try {
             const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,relative_humidity_2m,rain&timezone=GMT&forecast_days=1`;
             const response = await fetch(url);
@@ -43,56 +46,51 @@ export default function App() {
         }
     };
 
-    // Fetch data for the selected city when the component mounts or the selectedCity changes
     useEffect(() => {
         fetchData();
     }, [selectedCity]);
 
-    // animation
-    const fade = useRef(new Animated.Value(1)).current;
+    const fadeOutIn = () => {
+        Animated.sequence([
+            Animated.timing(fade, { toValue: 0, duration: 0, useNativeDriver: true }),
+            Animated.timing(fade, { toValue: 1, duration: 1000, useNativeDriver: true }),
+        ]).start();
+    };
 
-    const fadeOut = () => {
-        Animated.timing(fade, {
-            toValue: 0,
-            duration: 0
-        }).start();
-    }
-    const fadeIn = () => {
-        Animated.timing(fade,{
-            toValue: 1,
-            duration: 1000
-        }).start();
-    }
+    const fetchGPSLocation = async () => {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+            alert('Permission to access location was denied');
+            return;
+        }
 
-    const animation = async () => {
-        await fadeOut();
-        await fadeIn();
-    }
+        let location = await Location.getCurrentPositionAsync({});
+        fetchData(location.coords.latitude, location.coords.longitude);
+    };
 
-    // Render each LineChart for Temperature, Humidity, and Rain
-    const renderLineChart = (title, dataset, color, titleImage) => {
+    const renderLineChart = (title, dataset, color, image) => {
         if (dataset.length === 0) {
             return <View style={styles.chartContainer}><Text>No data available for {title}</Text></View>;
         }
 
         return (
-            <Animated.View style={[styles.chartContainer, {opacity:fade}]}>
-                <View style={{flexDirection: 'row'}}>
-                    <Image source={titleImage} style={styles.titleImage}/>
+            <Animated.View style={[styles.chartContainer, { opacity: fade }]}>
+                <View style={{ flexDirection: 'row' }}>
+                    <Image source={image} style={styles.titleImage}/>
                     <Text>{title}</Text>
                 </View>
                 <LineChart
                     data={{
-                        labels: ['0:00', '6:00', '12:00', '18:00', '24:00'], // Set custom labels
+                        labels: ['0:00', '6:00', '12:00', '18:00', '24:00'],
                         datasets: [{ data: dataset, color: () => color }],
                     }}
-                    width={Dimensions.get('window').width -16} // from react-native
+                    width={Dimensions.get('window').width - 16}
                     height={220}
                     chartConfig={{
                         backgroundColor: '#e26a00',
                         backgroundGradientFrom: '#fb8c00',
                         backgroundGradientTo: '#ffa726',
-                        decimalPlaces: 1, // optional, defaults to 2dp
+                        decimalPlaces: 1,
                         color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
                         labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
                         style: {
@@ -121,7 +119,7 @@ export default function App() {
             <Picker
                 selectedValue={selectedCity}
                 style={{ height: 50, width: 150, alignSelf: 'center' }}
-                onValueChange={(itemValue, itemIndex) => {setSelectedCity(itemValue);animation()}}>
+                onValueChange={(itemValue, itemIndex) => { setSelectedCity(itemValue); fadeOutIn(); }}>
                 <Picker.Item label="Tokyo" value="Tokyo" />
                 <Picker.Item label="Hong Kong" value="HongKong" />
                 <Picker.Item label="New York" value="NewYork" />
@@ -129,6 +127,7 @@ export default function App() {
             {renderLineChart('Temperature (°C)', temperatureData, 'rgba(255, 0, 0, 1)', titleImage.temperature)}
             {renderLineChart('Relative Humidity (%)', humidityData, 'rgba(0, 0, 255, 1)', titleImage.humidity)}
             {renderLineChart('Rain (mm)', rainData, 'rgba(0, 255, 0, 1)', titleImage.rain)}
+            <Button title="Use My Location" onPress={fetchGPSLocation} color="#841584" />
             <View style={styles.footer}>
                 <Text style={styles.footerText}>© 2024 Hugo</Text>
                 <Text style={[styles.footerText, styles.link]} onPress={() => Linking.openURL('https://github.com/HugoLi0213')}>GitHub</Text>
@@ -162,7 +161,8 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
         elevation: 5,
-        backgroundColor: '#f5f5f5', // Optional: if you want to style the container of the chart
+        backgroundColor: '#f5f5f5',
+        boxShadow: '0px 2px 4px rgba(0,0,0,0.25)', // Added for web compatibility
     },
     footer: {
         flexDirection: 'row',
@@ -177,9 +177,9 @@ const styles = StyleSheet.create({
         color: 'blue',
         textDecorationLine: 'underline',
     },
-    titleImage:{
+    titleImage: {
         height: 20,
         width: 20,
-    }
+        marginRight: 10, // Added some spacing between the image and the text
+    },
 });
-
