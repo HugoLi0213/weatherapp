@@ -7,10 +7,11 @@ import { LineChart } from 'react-native-chart-kit';
 
 // Location data for Tokyo, Hong Kong, and New York
 const locations = {
-    Tokyo: { latitude: 35.6895, longitude: 139.6917 },
-    HongKong: { latitude: 22.3193, longitude: 114.1694 },
-    NewYork: { latitude: 40.7128, longitude: -74.0060 }
+    Tokyo: { latitude: 35.6895, longitude: 139.6917, timezone: 'Asia/Tokyo' },
+    HongKong: { latitude: 22.3193, longitude: 114.1694, timezone: 'Asia/Hong_Kong' },
+    NewYork: { latitude: 40.7128, longitude: -74.0060, timezone: 'America/New_York' }
 };
+
 
 const titleImage = {
     temperature: require('./images/temperature.png'),
@@ -25,15 +26,18 @@ export default function App() {
     const [rainData, setRainData] = useState([]);
     const fade = useRef(new Animated.Value(1)).current;
 
-    const fetchData = async (latitude = null, longitude = null) => {
+    const fetchData = async (latitude = null, longitude = null, cityTimezone = null) => {
+        let timezone;
         if (!latitude || !longitude) {
-            ({ latitude, longitude } = locations[selectedCity]);
+            ({ latitude, longitude, timezone } = locations[selectedCity]);
+        } else {
+            timezone = cityTimezone ? cityTimezone : 'GMT'; // Default to GMT if location is fetched via GPS and cityTimezone is not provided
         }
         try {
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,relative_humidity_2m,rain&timezone=GMT&forecast_days=1`;
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,relative_humidity_2m,rain&timezone=${timezone}&forecast_days=1`;
             const response = await fetch(url);
             const data = await response.json();
-
+    
             if (response.ok) {
                 setTemperatureData(data.hourly.temperature_2m);
                 setHumidityData(data.hourly.relative_humidity_2m);
@@ -45,6 +49,7 @@ export default function App() {
             console.error("Error fetching weather data:", error);
         }
     };
+    
 
     useEffect(() => {
         fetchData();
